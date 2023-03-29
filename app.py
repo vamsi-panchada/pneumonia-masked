@@ -2,10 +2,6 @@ import streamlit as st
 import cv2
 import numpy as np
 from tensorflow.keras import layers, Model
-from tensorflow.keras.models import *
-from tensorflow.keras.layers import *
-from tensorflow.keras.optimizers import *
-
 
 def unet(input_size=(256,256,1)):
     inputs = layers.Input(input_size)
