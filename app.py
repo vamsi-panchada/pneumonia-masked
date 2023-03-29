@@ -171,6 +171,6 @@ if upload_file is not None:
         
         classes = pmodel.predict(im)
         if np.argmax(classes)==0:
-            st.title(':green[NORMAL] , You are fine No need to Worry. 😊')
+            st.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
         else:
-            st.title(':red[PNEUMONIA IS FOUND] , Get Well Soon ✌🏻')
+            st.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
