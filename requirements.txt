@@ -1,4 +1,5 @@
 streamlit
+pyttsx3
 opencv-python
 numpy
 tensorflow

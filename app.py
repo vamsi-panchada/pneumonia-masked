@@ -1,4 +1,6 @@
 import streamlit as st
+# import pyttsx3
+import os
 import cv2
 import numpy as np
 from tensorflow.keras import layers, Model
@@ -150,6 +152,9 @@ pmodel = Pmodel()
 pmodel.load_weights('PneumoniaWeights.hdf5')
 
 
+# engine = pyttsx3.init()
+
+
 if upload_file is not None:
     print(upload_file)
     file_bytes = np.asarray(bytearray(upload_file.read()), dtype=np.uint8)
@@ -168,6 +173,14 @@ if upload_file is not None:
         
         classes = pmodel.predict(im)
         if np.argmax(classes)==0:
+            # engine.say('your x-ray looks fine')
             st.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
+            os.system("say 'your x-ray looks fine'")
+            
         else:
+            # engine.say('pneumonia is detected, better consult a doctor')
             st.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
+            os.system("say 'pneumonia is detected, better consult a doctor'")
+            
+        # engine.runAndWait()
+        # engine.stop()
