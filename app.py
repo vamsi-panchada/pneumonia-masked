@@ -149,6 +149,7 @@ st.text('Please Upload a Chest X-RAY Image to detect the Pneumonia.')
 
 upload_file = st.file_uploader('Upload a Chest X-Ray here')
 model = unet(input_size=(512,512,1))
+model.load_weights('MaskWeights.hdf5')
 pmodel = Pmodel()
 pmodel.load_weights('PneumoniaWeights.hdf5')
 
@@ -162,7 +163,7 @@ if upload_file is not None:
         im = cv2.resize(im, (512, 512))[:,:,0]
         im = im.reshape(1, 512, 512, 1)
         
-        model.load_weights('MaskWeights.hdf5')
+        
         mask = model.predict(im).reshape(512, 512)
         im = im.reshape(512, 512)
         im[mask==0]=0
