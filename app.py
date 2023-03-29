@@ -188,7 +188,7 @@ if upload_file is not None:
         if np.argmax(classes)==0:
             # engine.say('your x-ray looks fine')
             st.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
-            # text_to_speech('your x-ray looks fine')
+            # text_to_speech('pneumonia is detected, better consult a doctor')
             # os.system("say 'your x-ray looks fine'")
             
         else:
