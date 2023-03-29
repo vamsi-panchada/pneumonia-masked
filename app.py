@@ -1,9 +1,22 @@
 import streamlit as st
-# import pyttsx3
-import os
+import pyttsx3
+# import os
+import time
 import cv2
 import numpy as np
 from tensorflow.keras import layers, Model
+
+
+# engine = pyttsx3.init()
+
+def text_to_speech(text):
+    engine = pyttsx3.init()  
+    engine.say(text)
+    engine.runAndWait() 
+
+    if engine._inLoop:
+        time.sleep(3)
+        engine.endLoop()
 
 def unet(input_size=(256,256,1)):
     inputs = layers.Input(input_size)
@@ -175,12 +188,14 @@ if upload_file is not None:
         if np.argmax(classes)==0:
             # engine.say('your x-ray looks fine')
             st.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
-            os.system("say 'your x-ray looks fine'")
+            text_to_speech('your x-ray looks fine')
+            # os.system("say 'your x-ray looks fine'")
             
         else:
             # engine.say('pneumonia is detected, better consult a doctor')
             st.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
-            os.system("say 'pneumonia is detected, better consult a doctor'")
+            text_to_speech('pneumonia is detected, better consult a doctor')
+            # os.system("say 'pneumonia is detected, better consult a doctor'")
             
         # engine.runAndWait()
         # engine.stop()
