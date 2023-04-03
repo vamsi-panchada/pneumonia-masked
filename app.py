@@ -1,22 +1,7 @@
 import streamlit as st
-import pyttsx3
-# import os
-import time
-import cv2
 import numpy as np
+import cv2
 from tensorflow.keras import layers, Model
-
-
-# engine = pyttsx3.init()
-
-def text_to_speech(text):
-    engine = pyttsx3.init()  
-    engine.say(text)
-    engine.runAndWait() 
-
-    if engine._inLoop:
-        time.sleep(3)
-        engine.endLoop()
 
 def unet(input_size=(256,256,1)):
     inputs = layers.Input(input_size)
@@ -158,44 +143,53 @@ def Pmodel():
 st.title('Pneumonia Detection Application using Segmentation')
 st.text('Please Upload a Chest X-RAY Image to detect the Pneumonia.')
 
-upload_file = st.file_uploader('Upload a Chest X-Ray here')
+# upload_file = st.file_uploader('Upload a Chest X-Ray here')
 model = unet(input_size=(512,512,1))
 model.load_weights('MaskWeights.hdf5')
 pmodel = Pmodel()
 pmodel.load_weights('PneumoniaWeights.hdf5')
 
+containerArray = []
+imageArray = []
 
-# engine = pyttsx3.init()
+uploadedFiles = st.file_uploader('Upload Chest X-Rays', accept_multiple_files=True)
 
+for upload_file in uploadedFiles:
 
-if upload_file is not None:
-    print(upload_file)
     file_bytes = np.asarray(bytearray(upload_file.read()), dtype=np.uint8)
     im = cv2.imdecode(file_bytes, 1)
-    st.image(cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC), channels="BGR")
+    container = st.container()
+    container.image(cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC), channels="BGR")
+    containerArray.append(container)
+    imageArray.append(im)
+
+
+if len(imageArray)>0:
     if st.button('Predict'):
-        im = cv2.resize(im, (512, 512))[:,:,0]
-        im = im.reshape(1, 512, 512, 1)
-        
-        
-        mask = model.predict(im).reshape(512, 512)
-        im = im.reshape(512, 512)
-        im[mask==0]=0
-        im = cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC).reshape(1, 224, 224, 1)
-        im = im.astype(np.float32)/255.
-        
-        classes = pmodel.predict(im)
-        if np.argmax(classes)==0:
-            # engine.say('your x-ray looks fine')
-            st.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
-            # text_to_speech('pneumonia is detected, better consult a doctor')
-            # os.system("say 'your x-ray looks fine'")
+        i = 0
+        for container, im in zip(containerArray, imageArray):
+            # container.write(i)
+            # i+=1 
+            im = cv2.resize(im, (512, 512))[:,:,0]
+            im = im.reshape(1, 512, 512, 1)
+            mask = model.predict(im).reshape(512, 512)
+            im = im.reshape(512, 512)
+            im[mask==0]=0
+            im = cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC).reshape(1, 224, 224, 1)
+            im = im.astype(np.float32)/255.
             
-        else:
-            # engine.say('pneumonia is detected, better consult a doctor')
-            st.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
-            # text_to_speech('pneumonia is detected, better consult a doctor')
-            # os.system("say 'pneumonia is detected, better consult a doctor'")
-            
-        # engine.runAndWait()
-        # engine.stop()
+            classes = pmodel.predict(im)
+            if np.argmax(classes)==0:
+                # engine.say('your x-ray looks fine')
+                container.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
+                # text_to_speech('pneumonia is detected, better consult a doctor')
+                # os.system("say 'your x-ray looks fine'")
+                
+            else:
+                # engine.say('pneumonia is detected, better consult a doctor')
+                container.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
+                # text_to_speech('pneumonia is detected, better consult a doctor')
+                # os.system("say 'pneumonia is detected, better consult a doctor'")
+                
+            # engine.runAndWait()
+            # engine.stop()
