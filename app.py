@@ -151,23 +151,32 @@ pmodel.load_weights('PneumoniaWeights.hdf5')
 
 containerArray = []
 imageArray = []
+betaColumnArray = []
+
 
 uploadedFiles = st.file_uploader('Upload Chest X-Rays', accept_multiple_files=True)
 
-for upload_file in uploadedFiles:
+# # print(len(uploadedFiles))
+if uploadedFiles:
+#     ColumnArray = list(st.columns(len(uploadedFiles)))
+    
+    for upload_file in uploadedFiles:
 
-    file_bytes = np.asarray(bytearray(upload_file.read()), dtype=np.uint8)
-    im = cv2.imdecode(file_bytes, 1)
-    container = st.container()
-    container.image(cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC), channels="BGR")
-    containerArray.append(container)
-    imageArray.append(im)
+        file_bytes = np.asarray(bytearray(upload_file.read()), dtype=np.uint8)
+        im = cv2.imdecode(file_bytes, 1)
+        container = st.container()
+        col1, mid, col2 = container.columns([10, 1, 20])
+        with col1:
+            col1.image(cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC), channels="BGR")
+        containerArray.append(container)
+        imageArray.append(im)
+        betaColumnArray.append(col2)
 
 
 if len(imageArray)>0:
     if st.button('Predict'):
         i = 0
-        for container, im in zip(containerArray, imageArray):
+        for container, im, col2 in zip(containerArray, imageArray, betaColumnArray):
             # container.write(i)
             # i+=1 
             im = cv2.resize(im, (512, 512))[:,:,0]
@@ -181,13 +190,15 @@ if len(imageArray)>0:
             classes = pmodel.predict(im)
             if np.argmax(classes)==0:
                 # engine.say('your x-ray looks fine')
-                container.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
+                with col2:
+                    col2.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
                 # text_to_speech('pneumonia is detected, better consult a doctor')
                 # os.system("say 'your x-ray looks fine'")
                 
             else:
                 # engine.say('pneumonia is detected, better consult a doctor')
-                container.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
+                with col2:
+                    col2.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
                 # text_to_speech('pneumonia is detected, better consult a doctor')
                 # os.system("say 'pneumonia is detected, better consult a doctor'")
                 
