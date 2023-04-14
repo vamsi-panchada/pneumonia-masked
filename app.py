@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import cv2
 from tensorflow.keras import layers, Model
+import getData
 
 def unet(input_size=(256,256,1)):
     inputs = layers.Input(input_size)
@@ -145,6 +146,16 @@ st.text('Please Upload a Chest X-RAY Image to detect the Pneumonia.')
 
 # upload_file = st.file_uploader('Upload a Chest X-Ray here')
 model = unet(input_size=(512,512,1))
+
+print('*'*10,'Downloading Models and weights', '*'*10)
+file_id = '1S9NafzhX8kb6NqBp2PiJx1mx5EHpLlwN'
+destination = 'MaskWeights.hdf5'
+getData.download_file_from_google_drive(file_id, destination)
+
+file_id = '1h6Jfq93KF59-N48t9HfY02_yUTAJdBCU'
+destination = 'PneumoniaWeights.hdf5'
+getData.download_file_from_google_drive(file_id, destination)
+
 model.load_weights('MaskWeights.hdf5')
 pmodel = Pmodel()
 pmodel.load_weights('PneumoniaWeights.hdf5')
