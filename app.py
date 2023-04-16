@@ -1,10 +1,16 @@
 import streamlit as st
-import numpy as np
-import cv2
 from tensorflow.keras import layers, Model
 import getData
+import cv2
+import numpy as np
 
-def unet(input_size=(256,256,1)):
+
+channel_axis = -1
+
+
+@st.cache_resource
+def unet():
+    input_size=(512, 512, 1)
     inputs = layers.Input(input_size)
     
     conv1 = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
@@ -44,10 +50,20 @@ def unet(input_size=(256,256,1)):
 
     conv10 = layers.Conv2D(1, (1, 1), activation='sigmoid')(conv9)
 
-    return Model(inputs=[inputs], outputs=[conv10])
+    pmodel = Model(inputs=[inputs], outputs=[conv10])
+
+    try:
+        pmodel.load_weights('MaskWeights.hdf5')
+    except:
+        file_id = '1S9NafzhX8kb6NqBp2PiJx1mx5EHpLlwN'
+        destination = 'MaskWeights.hdf5'
+        getData.download_file_from_google_drive(file_id, destination)
+        pmodel.load_weights('MaskWeights.hdf5')
+
+    return pmodel
 
 
-channel_axis = -1# if backend.image_data_format() == 'channels_first' else -1
+@st.cache_resource
 def Pmodel():
     img_input = layers.Input(shape = (224, 224, 1))
     x = layers.Conv2D(32, (3,3),
@@ -137,61 +153,45 @@ def Pmodel():
     x = layers.Dense(64, activation='relu', name='fc6')(x)
     x = layers.Dense(2, activation='softmax', name='predictions')(x)
     model = Model(inputs=img_input, outputs=x, name = 'own_build_model')
+
+    try:
+        model.load_weights('PneumoniaWeights.hdf5')
+    except:
+        file_id = '1h6Jfq93KF59-N48t9HfY02_yUTAJdBCU'
+        destination = 'PneumoniaWeights.hdf5'
+        getData.download_file_from_google_drive(file_id, destination)
+        model.load_weights('PneumoniaWeights.hdf5')
+
     return model
 
 
+model = unet()
+pmodel = Pmodel()
 
 st.title('Pneumonia Detection Application using Segmentation')
 st.text('Please Upload a Chest X-RAY Image to detect the Pneumonia.')
 
-# upload_file = st.file_uploader('Upload a Chest X-Ray here')
-model = unet(input_size=(512,512,1))
+uploadedFiles = st.file_uploader('Upload Chest X-Rays', accept_multiple_files=True)
 
-print('*'*10,'Downloading Models and weights', '*'*10)
-file_id = '1S9NafzhX8kb6NqBp2PiJx1mx5EHpLlwN'
-destination = 'MaskWeights.hdf5'
-getData.download_file_from_google_drive(file_id, destination)
-
-file_id = '1h6Jfq93KF59-N48t9HfY02_yUTAJdBCU'
-destination = 'PneumoniaWeights.hdf5'
-getData.download_file_from_google_drive(file_id, destination)
-
-model.load_weights('MaskWeights.hdf5')
-pmodel = Pmodel()
-pmodel.load_weights('PneumoniaWeights.hdf5')
-
-containerArray = []
 imageArray = []
 betaColumnArray = []
 
-
-uploadedFiles = st.file_uploader('Upload Chest X-Rays', accept_multiple_files=True)
-
-# # print(len(uploadedFiles))
 if uploadedFiles:
-#     ColumnArray = list(st.columns(len(uploadedFiles)))
     st.markdown("""<hr style="height:10px;border:none;color:#333;background-color:#333;" /> """, unsafe_allow_html=True)
     for upload_file in uploadedFiles:
 
         file_bytes = np.asarray(bytearray(upload_file.read()), dtype=np.uint8)
         im = cv2.imdecode(file_bytes, 1)
-        container = st.container()
-        col1, mid, col2 = container.columns([10, 1, 20])
-        with col1:
-            col1.image(cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC), channels="BGR")
-            col1.write(upload_file.name)
-        containerArray.append(container)
+        col1, mid, col2 = st.columns([10, 1, 20])
+        col1.image(cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC), channels="BGR")
+        col1.write(upload_file.name)
         imageArray.append(im)
         betaColumnArray.append(col2)
         st.markdown("""<hr style="height:10px;border:none;color:#333;background-color:#333;" /> """, unsafe_allow_html=True)
 
-
 if len(imageArray)>0:
     if st.button('Predict'):
-        i = 0
-        for container, im, col2 in zip(containerArray, imageArray, betaColumnArray):
-            # container.write(i)
-            # i+=1 
+        for im, col2 in zip(imageArray, betaColumnArray):
             im = cv2.resize(im, (512, 512))[:,:,0]
             im = im.reshape(1, 512, 512, 1)
             mask = model.predict(im).reshape(512, 512)
@@ -202,18 +202,10 @@ if len(imageArray)>0:
             
             classes = pmodel.predict(im)
             if np.argmax(classes)==0:
-                # engine.say('your x-ray looks fine')
-                with col2:
-                    col2.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
-                # text_to_speech('pneumonia is detected, better consult a doctor')
-                # os.system("say 'your x-ray looks fine'")
+                col2.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
                 
             else:
-                # engine.say('pneumonia is detected, better consult a doctor')
-                with col2:
-                    col2.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
-                # text_to_speech('pneumonia is detected, better consult a doctor')
-                # os.system("say 'pneumonia is detected, better consult a doctor'")
-                
-            # engine.runAndWait()
-            # engine.stop()
+                col2.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
+
+imageArray.clear()
+betaColumnArray.clear()
