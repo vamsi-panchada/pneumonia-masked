@@ -210,7 +210,7 @@ if len(imageArray)>0:
                 elif maskRadio == 'segmented':
                     mid.image(im, channels='GRAY', caption='Segmented Image')
             else:
-                print('else column')
+                # print('else column')
                 mid.header('Prediction ==>')
             im = cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC).reshape(1, 224, 224, 1)
             im = im.astype(np.float32)/255.
