@@ -178,7 +178,7 @@ betaColumnArray = []
 midColumnArray = []
 
 maskCheck = st.checkbox('Display Masks')
-
+# maskRadio = False
 if maskCheck:
     maskRadio = st.radio('which you want to display', ['mask', 'segmented'])
 
@@ -209,6 +209,9 @@ if len(imageArray)>0:
                     mid.image(mask, channels='GRAY', caption='Generated Mask')
                 elif maskRadio == 'segmented':
                     mid.image(im, channels='GRAY', caption='Segmented Image')
+            else:
+                print('else column')
+                mid.header('Prediction ==>')
             im = cv2.resize(im, (224, 224), interpolation=cv2.INTER_CUBIC).reshape(1, 224, 224, 1)
             im = im.astype(np.float32)/255.
             
