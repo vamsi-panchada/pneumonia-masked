@@ -3,6 +3,7 @@ from tensorflow.keras import layers, Model
 import getData
 import cv2
 import numpy as np
+import pickle
 
 
 channel_axis = -1
@@ -167,6 +168,7 @@ def Pmodel():
 
 model = unet()
 pmodel = Pmodel()
+knn_model = pickle.load(open('knn_model.pkl', 'rb'))
 
 st.title('Pneumonia Detection Application using Segmentation')
 st.text('Please Upload a Chest X-RAY Image to detect the Pneumonia.')
@@ -216,11 +218,19 @@ if len(imageArray)>0:
             im = im.astype(np.float32)/255.
             
             classes = pmodel.predict(im)
-            if np.argmax(classes)==0:
+
+            res = knn_model.predict(classes)
+
+            if res == 0:
                 col2.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
-                
             else:
                 col2.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
+
+            # if np.argmax(classes)==0:
+            #     col2.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
+                
+            # else:
+            #     col2.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
 
 imageArray.clear()
 betaColumnArray.clear()
