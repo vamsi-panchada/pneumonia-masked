@@ -223,8 +223,10 @@ if len(imageArray)>0:
 
             if res == 0:
                 col2.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
+                col2.write('with probability of '+str(classes[res]))
             else:
                 col2.title(':red[PNEUMONIA IS FOUND]\nGet Well Soon ✌🏻')
+                col2.write('with probability of '+str(classes[res]))
 
             # if np.argmax(classes)==0:
             #     col2.title(':green[NORMAL]\nYou are fine No need to Worry. 😊')
