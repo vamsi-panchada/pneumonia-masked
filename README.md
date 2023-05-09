@@ -1,7 +1,7 @@
 # pneumonia-masked
 
 
-@Guide : Ms. Gowri L, Asst. Professor-II, SASTRA University
+@Guide : Ms. Gowri L, Asst. Professor-II, SASTRA Deemed University
 
 
 @Autors : Panchada Vamsi, Rachamaduga Venkata Sreekar, Shaik Nadhursha
