@@ -1,5 +1,5 @@
 import os
-os.system('apt-get update && apt-get install libgl1-mesa-glx')
+os.system('apt-get update && apt-get install libgl1')
 
 import streamlit as st
 from tensorflow.keras import layers, Model
